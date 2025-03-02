@@ -17,23 +17,52 @@ vector<string> split(const string &);
  *  4. 2D_INTEGER_ARRAY cities
  */
 
-long roadsAndLibraries(int n, int c_lib, int c_road, vector<vector<int>> cities) {
-    if (c_lib <= c_road) return n*c_lib;
+long dfs(vector<vector<int>>& adj, int curr, vector<bool>& visited) {
+    visited[curr] = true;
+    long nodes = 1; 
 
+    for (int nbr : adj[curr]) {
+        if (!visited[nbr]) {
+            nodes += dfs(adj, nbr, visited);
+        }
+    }
+    return nodes;
+}
+
+pair<long, long> disc(vector<vector<int>>& adj, int n) {
+    vector<bool> visited(n);
+    long num_comps = 0;
+    long num_nodes = 0;
+
+    for (int i = 0; i < n; i++) {
+        if (!visited[i]) {
+            num_nodes += dfs(adj, i, visited);
+            num_comps++;
+        }
+    }
+
+    return make_pair(num_comps, num_nodes);
+}
+
+long roadsAndLibraries(int n, int c_lib, int c_road, vector<vector<int>> cities) {
+    if (c_lib <= c_road) return (long)n * c_lib;
     vector<vector<int>> adj(n);
 
-    int u,v;
+    int u, v;
     for (const auto& edge : cities) {
-        u = edge[0] -1;    
-        v = edge[1] -1;
+        u = edge[0] - 1;
+        v = edge[1] - 1;
 
         adj[u].push_back(v);
         adj[v].push_back(u);
     }
 
-    return 0;
-}
+    auto [num_comps, num_nodes] = disc(adj, n);
 
+    long ret = (long)c_lib * num_comps + (long)c_road * (num_nodes - num_comps);
+
+    return ret;
+}
 int main()
 {
     ofstream fout(getenv("OUTPUT_PATH"));
